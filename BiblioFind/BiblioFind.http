@@ -1,0 +1,6 @@
+@BiblioFind_HostAddress = http://localhost:5253
+
+GET {{BiblioFind_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
