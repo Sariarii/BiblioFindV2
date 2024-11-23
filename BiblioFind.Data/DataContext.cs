@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BiblioFind.Data
 {
+<<<<<<< HEAD
     public class DataContext : DbContext
     {
         public DbSet<AuthorModel> Authors { get; set; }
@@ -10,17 +11,31 @@ namespace BiblioFind.Data
         public DbSet<ShelfModel> Shelves { get; set; }
         public DbSet<MemberModel> Members { get; set; }
 
+=======
+    public class DataContext : DbContext 
+    {
+        public DbSet<AuthorModel> Author { get; set; }
+        public DbSet<BookModel> Book { get; set; }
+
+        public DbSet<ShelfModel> Shelf { get; set; }
+>>>>>>> bc523e1f68da446c605fa0f30e0e3b413111db3c
         public DataContext(DbContextOptions<DataContext> options)
             : base(options)
         {
             //Database.EnsureDeleted();
+<<<<<<< HEAD
             Database.EnsureCreated();
         }
 
+=======
+            Database.EnsureCreated(); 
+        }
+>>>>>>> bc523e1f68da446c605fa0f30e0e3b413111db3c
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
+<<<<<<< HEAD
             // Données des auteurs
             modelBuilder.Entity<AuthorModel>().HasData(
                 new AuthorModel() { Id = 1, FirstName = "J.K.", Name = "Rowling" },
@@ -55,6 +70,23 @@ namespace BiblioFind.Data
                 new MemberModel() { Id = 3, FirstName = "Alice", LastName = "Brown" }
             );
 
+=======
+            modelBuilder.Entity<AuthorModel>().HasData(
+                new AuthorModel() { Id = 1, FirstName = "JK", Name = "Rowlling"},
+                new AuthorModel() { Id = 2, FirstName = "JRR", Name = "Tolkien" },
+                new AuthorModel() { Id = 3, FirstName = "RR", Name = "Martin" }
+            );
+
+            modelBuilder.Entity<BookModel>().HasData(
+                new BookModel() { Id = 1, Title = "HP1", Status = false, AuthorModelId=1,ShelfModelId = 1 },
+                new BookModel() { Id = 2, Title = "HP2", Status = false, AuthorModelId=1, ShelfModelId = 1 },
+                new BookModel() { Id = 3, Title = "Seigneurs des anneaux", Status = false, AuthorModelId=2, ShelfModelId = 1 }
+                );
+
+            modelBuilder.Entity<ShelfModel>().HasData(
+                new ShelfModel() { Id = 1 , Name = "Fantastique"}
+            );
+>>>>>>> bc523e1f68da446c605fa0f30e0e3b413111db3c
         }
     }
 }

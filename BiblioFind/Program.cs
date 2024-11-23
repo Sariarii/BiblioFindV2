@@ -1,7 +1,10 @@
+<<<<<<< HEAD
 using BiblioFind.Data.Repositories;
 using BiblioFind.Data;
 using Microsoft.EntityFrameworkCore;
 
+=======
+>>>>>>> bc523e1f68da446c605fa0f30e0e3b413111db3c
 namespace BiblioFind
 {
     public class Program
@@ -10,6 +13,7 @@ namespace BiblioFind
         {
             var builder = WebApplication.CreateBuilder(args);
 
+<<<<<<< HEAD
 
             // Enregistrer la connexion à la base de données
             builder.Services.AddDbContext<DataContext>(options =>
@@ -19,10 +23,15 @@ namespace BiblioFind
             builder.Services.AddScoped<IBookRepository, SqlBookRepository>();
 
             // Ajouter les contrôleurs
+=======
+            // Add services to the container.
+
+>>>>>>> bc523e1f68da446c605fa0f30e0e3b413111db3c
             builder.Services.AddControllers();
 
             var app = builder.Build();
 
+<<<<<<< HEAD
             // Configurer le pipeline des requêtes HTTP.
             app.UseAuthorization();
 
@@ -34,3 +43,16 @@ namespace BiblioFind
         }
     }
 }
+=======
+            // Configure the HTTP request pipeline.
+
+            app.UseAuthorization();
+
+
+            app.MapControllers();
+
+            app.Run();
+        }
+    }
+}
+>>>>>>> bc523e1f68da446c605fa0f30e0e3b413111db3c
