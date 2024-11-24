@@ -95,5 +95,11 @@ namespace BiblioFind.Data.Repositories
             await context.SaveChangesAsync();
             return true;  // Retourner true si l'assignation a réussi
         }
+        public async Task<IEnumerable<BookModel>> SearchBooksByTitleAsync(string title)
+        {
+            return await context.Books
+                .Where(b => b.Title.ToLower().Contains(title.ToLower()))
+                .ToListAsync();
+        }
     }
 }

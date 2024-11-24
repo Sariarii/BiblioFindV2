@@ -98,5 +98,14 @@ namespace BiblioFind.Data.Repositories
 
             return true;  // Retourner true si tout s'est bien passé
         }
+
+
+        public async Task<IEnumerable<BookModel>> SearchBooksByTitleAsync(string title)
+        {
+            return await context.Books
+                .AsNoTracking()
+                .Where(b => EF.Functions.Like(b.Title.ToLower(), $"%{title.ToLower()}%"))
+                .ToListAsync();
+        }
     }
 }

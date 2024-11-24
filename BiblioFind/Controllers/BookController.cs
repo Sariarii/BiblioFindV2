@@ -153,6 +153,17 @@ namespace BiblioFind.Controllers
                 return StatusCode(500, new { message = "Erreur interne du serveur.", details = ex.Message });
             }
         }
+        [HttpGet("search/{title}")]
+        public async Task<IActionResult> SearchBooksByTitle(string title)
+        {
+            var books = await _bookRepository.SearchBooksByTitleAsync(title);
+            if (books == null || !books.Any())
+            {
+                return NotFound("Aucun livre trouvé avec ce titre.");
+            }
+
+            return Ok(books);
+        }
 
     }
 }

@@ -14,11 +14,4 @@
     <ProjectReference Include="..\BiblioFind.Data\BiblioFind.Data.csproj" />
   </ItemGroup>
 
-<<<<<<< HEAD
-=======
-  <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
->>>>>>> bc523e1f68da446c605fa0f30e0e3b413111db3c
 </Project>
