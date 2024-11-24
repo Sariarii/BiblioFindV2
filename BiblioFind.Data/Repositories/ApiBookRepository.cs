@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 
 namespace BiblioFind.Data.Repositories
@@ -101,5 +102,54 @@ namespace BiblioFind.Data.Repositories
                 .Where(b => b.Title.ToLower().Contains(title.ToLower()))
                 .ToListAsync();
         }
+        public async Task<bool> AddBookWithAuthorAsync(BookModel book, AuthorModel author)
+        {
+            if (book == null || author == null)
+            {
+                return false; // Validation des paramètres
+            }
+
+            // Construire l'objet de la requête avec les propriétés spécifiques de BookModel
+            var requestPayload = new
+            {
+                Title = book.Title,
+                IsBorrowed = book.IsBorrowed,
+                AuthorModelId = book.AuthorModelId,
+                Author = new
+                {
+                    author.Name,
+                    author.FirstName
+                },
+                ShelfModelId = book.ShelfModelId,
+                MemberModelId = book.MemberModelId // Nullable, donc peut être null
+            };
+
+            try
+            {
+                using var httpClient = new HttpClient
+                {
+                    BaseAddress = new Uri("http://localhost:5253/api/")
+                };
+
+                // Envoyer la requête POST
+                var response = await httpClient.PostAsJsonAsync("book/add", requestPayload);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return true; // Succès
+                }
+
+                // Logique en cas d'échec
+                Console.WriteLine($"Erreur lors de l'ajout : {response.StatusCode} - {response.ReasonPhrase}");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                // Gérer les erreurs de communication
+                Console.WriteLine($"Exception lors de l'ajout : {ex.Message}");
+                return false;
+            }
+        }
+
     }
 }

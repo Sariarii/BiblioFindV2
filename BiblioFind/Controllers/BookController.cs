@@ -1,4 +1,5 @@
-﻿using BiblioFind.Data.Repositories;
+﻿using BiblioFind.Data.Models;
+using BiblioFind.Data.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
@@ -164,6 +165,31 @@ namespace BiblioFind.Controllers
 
             return Ok(books);
         }
+
+        [HttpPost("add")]
+        public async Task<IActionResult> AddBookWithAuthor([FromBody] AddBookRequest request)
+        {
+            if (request == null || request.Book == null || request.Author == null)
+            {
+                return BadRequest("Données invalides.");
+            }
+
+            var result = await _bookRepository.AddBookWithAuthorAsync(request.Book, request.Author);
+            if (result)
+            {
+                return Ok("Le livre et l'auteur ont été ajoutés avec succès.");
+            }
+            return StatusCode(500, "Erreur lors de l'ajout du livre et de l'auteur.");
+        }
+
+        // Classe pour la requête
+        public class AddBookRequest
+        {
+            public BookModel Book { get; set; }
+            public AuthorModel Author { get; set; }
+        }
+
+
 
     }
 }

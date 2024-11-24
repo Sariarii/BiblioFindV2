@@ -99,7 +99,6 @@ namespace BiblioFind.Data.Repositories
             return true;  // Retourner true si tout s'est bien passé
         }
 
-
         public async Task<IEnumerable<BookModel>> SearchBooksByTitleAsync(string title)
         {
             return await context.Books
@@ -107,5 +106,38 @@ namespace BiblioFind.Data.Repositories
                 .Where(b => EF.Functions.Like(b.Title.ToLower(), $"%{title.ToLower()}%"))
                 .ToListAsync();
         }
+
+        public async Task<bool> AddBookWithAuthorAsync(BookModel book, AuthorModel author)
+        {
+            if (book == null || author == null)
+            {
+                return false; // Valider les entrées
+            }
+
+            // Vérifiez si l'auteur existe déjà
+            var existingAuthor = await context.Authors
+                .FirstOrDefaultAsync(a => a.Name.ToLower() == author.Name.ToLower() && a.FirstName.ToLower() == author.FirstName.ToLower());
+
+            if (existingAuthor != null)
+            {
+                // Associez l'auteur existant au livre
+                book.AuthorModelId = existingAuthor.Id;
+            }
+            else
+            {
+                // Ajoutez le nouvel auteur à la base de données
+                context.Authors.Add(author);
+                await context.SaveChangesAsync();
+
+                // Associez l'auteur nouvellement créé au livre
+                book.AuthorModelId = author.Id;
+            }
+
+            // Ajoutez le livre à la base de données
+            context.Books.Add(book);
+            await context.SaveChangesAsync();
+            return true;
+        }
+
     }
 }

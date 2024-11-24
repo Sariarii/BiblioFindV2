@@ -1,6 +1,7 @@
 ﻿using BiblioFind.Data.Repositories;
 using System;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 
 namespace BiblioFind.Cmd
@@ -22,7 +23,8 @@ namespace BiblioFind.Cmd
                 Console.WriteLine("5. Rendre un livre");
                 Console.WriteLine("6. Assigner un rayon à un livre");
                 Console.WriteLine("7. Rechercher un livre par titre");
-                Console.WriteLine("8. Quitter");
+                Console.WriteLine("8. Ajouter un livre avec son auteur");
+                Console.WriteLine("9. Quitter");
                 Console.Write("Sélectionnez une option : ");
 
                 string? choice = Console.ReadLine();
@@ -50,6 +52,9 @@ namespace BiblioFind.Cmd
                         await SearchBookByTitle();
                         break;
                     case "8":
+                        await AddBookWithAuthor();
+                        break;
+                    case "9":
                         Console.WriteLine("Au revoir !");
                         return;
                     default:
@@ -204,5 +209,70 @@ namespace BiblioFind.Cmd
 
             Console.ReadKey();
         }
+
+        private static async Task AddBookWithAuthor()
+        {
+            Console.Write("Entrez le titre du livre : ");
+            string title = Console.ReadLine();
+
+            Console.Write("Le livre est-il emprunté ? (oui/non) : ");
+            bool isBorrowed = Console.ReadLine()?.Trim().ToLower() == "oui";
+
+            Console.Write("Entrez l'ID du rayon : ");
+            int shelfId = int.Parse(Console.ReadLine() ?? "0");
+
+            Console.Write("Entrez le nom de l'auteur : ");
+            string authorName = Console.ReadLine();
+
+            Console.Write("Entrez le prénom de l'auteur : ");
+            string authorFirstName = Console.ReadLine();
+
+            // Construire les modèles pour le livre et l'auteur
+            var book = new
+            {
+                Title = title,
+                IsBorrowed = isBorrowed,
+                ShelfModelId = shelfId
+            };
+
+            var author = new
+            {
+                Name = authorName,
+                FirstName = authorFirstName
+            };
+
+            try
+            {
+                using var client = new HttpClient();
+                client.BaseAddress = new Uri("http://localhost:5253/api/");
+
+                var payload = new
+                {
+                    Book = book,
+                    Author = author
+                };
+
+                // Envoyer la requête POST
+                var response = await client.PostAsJsonAsync("book/add", payload);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("Le livre avec son auteur a été ajouté avec succès.");
+                }
+                else
+                {
+                    Console.WriteLine($"Erreur lors de l'ajout : {response.StatusCode} - {response.ReasonPhrase}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception lors de l'ajout : {ex.Message}");
+            }
+
+            Console.WriteLine("Appuyez sur une touche pour continuer...");
+            Console.ReadKey();
+        }
+
+
     }
 }

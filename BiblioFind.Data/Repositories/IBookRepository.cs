@@ -16,5 +16,7 @@ namespace BiblioFind.Data.Repositories
         Task<bool> ReturnBook(int bookId);
         Task<bool> AssignShelfToBookAsync(int bookId, int shelfId);
         Task<IEnumerable<BookModel>> SearchBooksByTitleAsync(string title);
+
+        Task<bool> AddBookWithAuthorAsync(BookModel book, AuthorModel author);
     }
 }
