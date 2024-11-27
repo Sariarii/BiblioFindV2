@@ -42,10 +42,11 @@ namespace BiblioFind.Cmd
                         await ListBooksByShelf();
                         break;
                     case "4":
-                        await BorrowBook();
+                        await Get(repository);
+                        await BorrowBook(repository);
                         break;
                     case "5":
-                        await ReturnBook();
+                        await ReturnBook(repository);
                         break;
                     case "6":
                         await Get(repository);
@@ -91,7 +92,7 @@ namespace BiblioFind.Cmd
             Console.Write("Entrez le nom de l'auteur : ");
             string authorName = Console.ReadLine();
 
-            using var client = new HttpClient();
+            var client = new HttpClient();
             var response = await client.GetAsync($"http://localhost:5253/api/book/author?authorName={authorName}");
 
             if (response.IsSuccessStatusCode)
@@ -112,7 +113,7 @@ namespace BiblioFind.Cmd
             Console.Write("Entrez l'ID du rayon : ");
             int shelfId = int.Parse(Console.ReadLine() ?? "0");
 
-            using var client = new HttpClient();
+            var client = new HttpClient();
             var response = await client.GetAsync($"http://localhost:5253/api/book/shelf?shelfId={shelfId}");
 
             if (response.IsSuccessStatusCode)
@@ -128,46 +129,58 @@ namespace BiblioFind.Cmd
             Console.ReadKey();
         }
 
-        private static async Task BorrowBook()
+        private static async Task BorrowBook(IBookRepository repository)
         {
-            Console.Write("Entrez l'ID du livre à emprunter : ");
-            int bookId = int.Parse(Console.ReadLine() ?? "0");
-            Console.Write("Entrez l'ID du membre : ");
-            int memberId = int.Parse(Console.ReadLine() ?? "0");
 
-            using var client = new HttpClient();
-            var response = await client.PostAsync($"http://localhost:5253/api/book/borrow/{bookId}/{memberId}", null);
-
-            if (response.IsSuccessStatusCode)
+            Console.WriteLine("Quel livre voulez vous emprunter ?");
+            int id;
+            string input = Console.ReadLine();
+            int.TryParse(input, out id);
+            var result = repository.SearchBooksById(id).Result;
+            Console.WriteLine($"Est ce bien ce livre ? : {result.Title} (Oui/Non)");
+            string Response = Console.ReadLine();
+            if (Response == "Oui")
             {
-                Console.WriteLine("Le livre a été emprunté avec succès.");
+                result.IsBorrowed = true;
+                result = repository.Update(id, result).Result;
+            }
+            else if (Response == "Non")
+            {
+
+                return;
             }
             else
             {
-                Console.WriteLine("Erreur lors de l'emprunt du livre.");
+                Console.WriteLine("Reponse non valide");
+                return;
             }
-
-            Console.ReadKey();
         }
 
-        private static async Task ReturnBook()
+        private static async Task ReturnBook(IBookRepository repository)
         {
-            Console.Write("Entrez l'ID du livre à rendre : ");
-            int bookId = int.Parse(Console.ReadLine() ?? "0");
-
-            using var client = new HttpClient();
-            var response = await client.PostAsync($"http://localhost:5253/api/book/return/{bookId}", null);
-
-            if (response.IsSuccessStatusCode)
+            Console.WriteLine("Quel livre voulez vous emprunter ?");
+            int id;
+            string input = Console.ReadLine();
+            int.TryParse(input, out id);
+            var result = repository.SearchBooksById(id).Result;
+            Console.WriteLine($"Est ce bien ce livre ? : {result.Title} (Oui/Non)");
+            string Response = Console.ReadLine();
+            if (Response == "Oui")
             {
-                Console.WriteLine("Le livre a été rendu avec succès.");
+                result.IsBorrowed = false;
+                result = repository.Update(id, result).Result;
+                Console.WriteLine(result.IsBorrowed);
+            }
+            else if (Response == "Non")
+            {
+
+                return;
             }
             else
             {
-                Console.WriteLine("Erreur lors du retour du livre.");
+                Console.WriteLine("Reponse non valide");
+                return;
             }
-
-            Console.ReadKey();
         }
 
         private static async Task Get(IBookRepository repository)
@@ -181,7 +194,7 @@ namespace BiblioFind.Cmd
             StringBuilder message = new StringBuilder();
             foreach (var item in models)
             {
-                message.Append($"{item.Id} {item.Title} {item.Author}\n");
+                message.Append($"{item.Id} {item.Title} {item.IsBorrowed}\n");
             }
             Console.WriteLine(message.ToString());
 
@@ -205,7 +218,7 @@ namespace BiblioFind.Cmd
                 int.TryParse(input, out idShelf);
                 result.ShelfModelId = idShelf;
                 Console.WriteLine($"{result.ShelfModelId}");
-                result = repository.AssignShelfToBookAsync(id, result).Result;
+                result = repository.Update(id, result).Result;
             }
             else if (Response == "Non")
             {
@@ -224,7 +237,7 @@ namespace BiblioFind.Cmd
             Console.Write("Entrez le titre ou une partie du titre du livre : ");
             string title = Console.ReadLine();
 
-            using var client = new HttpClient();
+            var client = new HttpClient();
             var response = await client.GetAsync($"http://localhost:5253/api/book/search/{title}");
 
             if (response.IsSuccessStatusCode)

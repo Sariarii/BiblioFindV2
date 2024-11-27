@@ -9,16 +9,14 @@ namespace BiblioFind.Data.Repositories
 {
     public interface IBookRepository
     {
-        Task<IEnumerable<BookModel>> GetBooksByAuthor(string authorName);
         Task<IEnumerable<BookModel>> GetShelf(int shelfId);
         Task<IEnumerable<BookModel>> GetBorrowedBooks();
-        Task<bool> BorrowBook(int bookId, int memberId);
-        Task<bool> ReturnBook(int bookId);
-        Task<BookModel> AssignShelfToBookAsync(int bookId, BookModel model);
+        Task<BookModel> Update(int bookId, BookModel model);
         Task<IEnumerable<BookModel>> SearchBooksByTitleAsync(string title);
         Task<IEnumerable<BookModel>> Get();
         Task<BookModel> SearchBooksById(int id);
-
+        Task<IEnumerable<BookModel>> GetBooksByAuthor(string authorName);
+        
         Task<bool> AddBookWithAuthorAsync(BookModel book, AuthorModel author);
     }
 }

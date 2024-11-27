@@ -9,7 +9,6 @@ namespace BiblioFind.Data.Repositories
 {
     public class ApiBookRepository : IBookRepository
     {
-        private readonly DataContext context;
         private readonly string url;
         private readonly HttpClient client;
         public ApiBookRepository(string url)
@@ -46,37 +45,7 @@ namespace BiblioFind.Data.Repositories
                 .ToListAsync();
         }
 
-        // Implémentation de la méthode BorrowBook
-        public async Task<bool> BorrowBook(int bookId, int memberId)
-        {
-            var book = await context.Books.FindAsync(bookId);
-            if (book == null || book.IsBorrowed)
-                return false;  // Le livre n'existe pas ou est déjà emprunté
-
-            // Marquer le livre comme emprunté
-            book.IsBorrowed = true;
-            book.MemberModelId = memberId;
-
-            // Sauvegarder les changements dans la base de données
-            await context.SaveChangesAsync();
-            return true;
-        }
-
-        // Implémentation de la méthode ReturnBook
-        public async Task<bool> ReturnBook(int bookId)
-        {
-            var book = await context.Books.FindAsync(bookId);
-            if (book == null || !book.IsBorrowed)
-                return false;  // Le livre n'existe pas ou n'est pas emprunté
-
-            // Marquer le livre comme retourné
-            book.IsBorrowed = false;
-            book.MemberModelId = null;  // Réinitialiser l'association du membre
-
-            // Sauvegarder les changements dans la base de données
-            await context.SaveChangesAsync();
-            return true;
-        }
+        
 
         public async Task<IEnumerable<BookModel>> SearchBooksByTitleAsync(string title)
         {
@@ -135,7 +104,7 @@ namespace BiblioFind.Data.Repositories
 
 
 
-        public async Task<BookModel> AssignShelfToBookAsync(int bookId, BookModel model)
+        public async Task<BookModel> Update(int bookId, BookModel model)
         {
             var response = await client.PutAsJsonAsync($"{url}/book/{bookId}", model);
             if (response.IsSuccessStatusCode)
@@ -154,9 +123,9 @@ namespace BiblioFind.Data.Repositories
             return null;
         }
 
-        public async Task<BookModel> SearchBooksById(int id)
+        public async Task<BookModel> SearchBooksById(int bookId)
         {
-            var response = await client.GetAsync($"{url}/book/{id}");
+            var response = await client.GetAsync($"{url}/book/{bookId}");
             if (response.IsSuccessStatusCode)
             {
                 return await response.Content.ReadFromJsonAsync<BookModel>();

@@ -44,30 +44,6 @@ namespace BiblioFind.Data.Repositories
         }
 
         // Emprunter un livre
-        public async Task<bool> BorrowBook(int bookId, int memberId)
-        {
-            // Logique pour marquer un livre comme emprunté
-            var book = await context.Books.FindAsync(bookId);
-            if (book == null || book.IsBorrowed) return false;  // Le livre est déjà emprunté ou n'existe pas
-
-            book.IsBorrowed = true;
-            book.MemberModelId = memberId;  // Assigner le membre
-            await context.SaveChangesAsync();
-            return true;
-        }
-
-        // Implémentation de la méthode ReturnBook
-        public async Task<bool> ReturnBook(int bookId)
-        {
-            // Logique pour marquer un livre comme retourné
-            var book = await context.Books.FindAsync(bookId);
-            if (book == null || !book.IsBorrowed) return false;  // Le livre n'est pas emprunté ou n'existe pas
-
-            book.IsBorrowed = false;
-            book.MemberModelId = null;  // Réinitialiser l'assignation du membre
-            await context.SaveChangesAsync();
-            return true;
-        }
         public async Task<bool> AssignShelfToBookAsync(int bookId, int shelfId)
         {
             // Trouver le livre par son ID
@@ -106,11 +82,12 @@ namespace BiblioFind.Data.Repositories
         }
         public async Task<IEnumerable<BookModel>> Get()
         {
+
             return await context.Books.ToListAsync();
         }
-        public async Task<BookModel?> SearchBooksById(int id)
+        public async Task<BookModel?> SearchBooksById(int bookId)
         {
-            return await context.Books.FirstOrDefaultAsync(b => b.Id == id);
+            return await context.Books.FirstOrDefaultAsync(b => b.Id == bookId);
         }
 
 
@@ -146,7 +123,7 @@ namespace BiblioFind.Data.Repositories
             return true;
         }
 
-        public async Task<BookModel> AssignShelfToBookAsync(int bookId, BookModel model)
+        public async Task<BookModel> Update(int bookId, BookModel model)
         {
             var entity = await context.Set<BookModel>().FirstOrDefaultAsync(x => x.Id == bookId);
             if (entity == null)

@@ -13,7 +13,6 @@ namespace BiblioFind.Data
         public DataContext(DbContextOptions<DataContext> options)
             : base(options)
         {
-            Database.EnsureDeleted();
             Database.EnsureCreated();
         }
 
@@ -42,10 +41,10 @@ namespace BiblioFind.Data
                 new BookModel() { Id = 1, Title = "Harry Potter and the Philosopher's Stone", IsBorrowed = false, AuthorModelId = 1, ShelfModelId = 1 },
                 new BookModel() { Id = 2, Title = "Harry Potter and the Chamber of Secrets", IsBorrowed = false, AuthorModelId = 1, ShelfModelId = 1 },
                 new BookModel() { Id = 3, Title = "The Lord of the Rings", IsBorrowed = false, AuthorModelId = 2, ShelfModelId = 1 },
-                new BookModel() { Id = 4, Title = "A Game of Thrones", IsBorrowed = true, AuthorModelId = 3, ShelfModelId = 1, MemberModelId = 1 },
+                new BookModel() { Id = 4, Title = "A Game of Thrones", IsBorrowed = true, AuthorModelId = 3, ShelfModelId = 1},
                 new BookModel() { Id = 5, Title = "Murder on the Orient Express", IsBorrowed = false, AuthorModelId = 4, ShelfModelId = 2 },
-                new BookModel() { Id = 6, Title = "And Then There Were None", IsBorrowed = true, AuthorModelId = 4, ShelfModelId = 2, MemberModelId = 2 },
-                new BookModel() { Id = 7, Title = "Dune", IsBorrowed = false, AuthorModelId = 5, ShelfModelId = 3 }
+                new BookModel() { Id = 6, Title = "And Then There Were None", IsBorrowed = true, AuthorModelId = 4, ShelfModelId = 2 },
+                new BookModel() { Id = 7, Title = "Dune", IsBorrowed = false, AuthorModelId = 4, ShelfModelId = 3 }
             );
 
             // Données des membres

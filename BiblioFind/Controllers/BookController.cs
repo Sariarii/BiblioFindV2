@@ -89,44 +89,6 @@ namespace BiblioFind.Controllers
             }
         }
 
-        // Endpoint : Emprunter un livre
-        [HttpPost("borrow/{bookId}/{memberId}")]
-        public async Task<IActionResult> BorrowBook(int bookId, int memberId)
-        {
-            try
-            {
-                bool success = await _bookRepository.BorrowBook(bookId, memberId);
-                if (!success)
-                {
-                    return NotFound(new { message = "Le livre est déjà emprunté ou n'existe pas." });
-                }
-                return Ok(new { message = "Le livre a été emprunté avec succès." });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Erreur interne du serveur.", details = ex.Message });
-            }
-        }
-
-        // Endpoint : Rendre un livre
-        [HttpPost("return/{bookId}")]
-        public async Task<IActionResult> ReturnBook(int bookId)
-        {
-            try
-            {
-                bool success = await _bookRepository.ReturnBook(bookId);
-                if (!success)
-                {
-                    return NotFound(new { message = "Le livre n'est pas emprunté." });
-                }
-                return Ok(new { message = "Le livre a été rendu avec succès." });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Erreur interne du serveur.", details = ex.Message });
-            }
-        }
-
         // BookController.cs
 
         [HttpGet]
@@ -135,23 +97,24 @@ namespace BiblioFind.Controllers
             return await _bookRepository.Get();
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<BookModel>> SearchBooksById(int id)
+        [HttpGet("{bookId}")]
+        public async Task<ActionResult<BookModel>> SearchBooksById(int bookId)
         {
-            var model = await _bookRepository.SearchBooksById(id);
+            var model = await _bookRepository.SearchBooksById(bookId);
             if (model == null)
                 return NotFound();
             return model;
         }
 
         [HttpPut("{bookId}")]
-        public async Task<ActionResult<BookModel>> AssignShelfToBookAsync(int bookId, BookModel model)
+        public async Task<ActionResult<BookModel>> Update(int bookId, BookModel model)
         {
-            var person = await _bookRepository.AssignShelfToBookAsync(bookId, model);
-            if (person == null)
+            var book = await _bookRepository.Update(bookId, model);
+            if (book == null)
                 return NotFound();
             return model;
         }
+
 
         //public async Task<IActionResult> AssignShelfToBook(int bookId, [FromBody] int shelfId)
         //{
