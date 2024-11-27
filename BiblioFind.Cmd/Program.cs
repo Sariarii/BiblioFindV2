@@ -40,7 +40,7 @@ namespace BiblioFind.Cmd
                         await ListBooksByAuthor();
                         break;
                     case "3":
-                        await ListBooksByShelf();
+                        await ListBooksByShelf(repository);
                         break;
                     case "4":
                         await Get(repository);
@@ -110,25 +110,25 @@ namespace BiblioFind.Cmd
             Console.ReadKey();
         }
 
-        private static async Task ListBooksByShelf()
+        private static async Task ListBooksByShelf(IBookRepository repository)
         {
             Console.Write("Entrez l'ID du rayon : ");
             int shelfId = int.Parse(Console.ReadLine() ?? "0");
-
-            var client = new HttpClient();
-            var response = await client.GetAsync($"http://localhost:5253/api/book/shelf?shelfId={shelfId}");
-
-            if (response.IsSuccessStatusCode)
+            var result = repository.GetShelf(shelfId).Result;
+            if (result == null)
             {
-                var content = await response.Content.ReadAsStringAsync();
-                Console.WriteLine(content);
+                Console.WriteLine("Error");
+                return;
             }
-            else
+            StringBuilder message = new StringBuilder();
+            foreach (var item in result)
             {
-                Console.WriteLine("Erreur de récupération des livres.");
+                message.Append($"{item.Title} {item.IsBorrowed}\n");
             }
+            Console.WriteLine(message.ToString());
 
             Console.ReadKey();
+
         }
 
         private static async Task BorrowBook(IBookRepository repository)

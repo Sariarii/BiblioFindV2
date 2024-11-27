@@ -31,11 +31,18 @@ namespace BiblioFind.Data.Repositories
         // Lister les livres par rayon
         public async Task<IEnumerable<BookModel>> GetShelf(int shelfId)
         {
-            throw new NotImplementedException();
-            //return await context.Books
-            //    .AsNoTracking()
-            //    .Where(b => b.ShelfModelId == shelfId)
-            //    .ToListAsync();
+            var client = new HttpClient();
+            var response = await client.GetAsync($"{url}/book/shelf?shelfId={shelfId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<IEnumerable<BookModel>>();
+
+            }
+            else
+            {
+                return null;
+            }
         }
 
         // Lister les livres empruntés
