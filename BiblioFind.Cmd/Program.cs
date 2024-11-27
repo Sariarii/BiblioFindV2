@@ -1,4 +1,5 @@
-﻿using BiblioFind.Data.Repositories;
+﻿using BiblioFind.Data.Models;
+using BiblioFind.Data.Repositories;
 using System;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -46,6 +47,7 @@ namespace BiblioFind.Cmd
                         await BorrowBook(repository);
                         break;
                     case "5":
+                        await Get(repository);
                         await ReturnBook(repository);
                         break;
                     case "6":
@@ -56,7 +58,7 @@ namespace BiblioFind.Cmd
                         await SearchBookByTitle();
                         break;
                     case "8":
-                        await AddBookWithAuthor();
+                        await AddBookWithAuthor(repository);
                         break;
                     case "9":
                         Console.WriteLine("Au revoir !");
@@ -72,7 +74,7 @@ namespace BiblioFind.Cmd
         private static async Task ListBorrowedBooks()
         {
             using var client = new HttpClient();
-            var response = await client.GetAsync("http://localhost:5253/api/book/borrowed");
+            var response = await client.GetAsync("http://localhost:5253/api/book/borrowed?IsBorrowed=true");
 
             if (response.IsSuccessStatusCode)
             {
@@ -158,7 +160,7 @@ namespace BiblioFind.Cmd
 
         private static async Task ReturnBook(IBookRepository repository)
         {
-            Console.WriteLine("Quel livre voulez vous emprunter ?");
+            Console.WriteLine("Quel livre voulez vous rendre ?");
             int id;
             string input = Console.ReadLine();
             int.TryParse(input, out id);
@@ -169,7 +171,6 @@ namespace BiblioFind.Cmd
             {
                 result.IsBorrowed = false;
                 result = repository.Update(id, result).Result;
-                Console.WriteLine(result.IsBorrowed);
             }
             else if (Response == "Non")
             {
@@ -253,69 +254,29 @@ namespace BiblioFind.Cmd
             Console.ReadKey();
         }
 
-        private static async Task AddBookWithAuthor()
+        private static async Task AddBookWithAuthor(IBookRepository repository)
         {
+            int idAuthor;
+            int idShelf;
             Console.Write("Entrez le titre du livre : ");
             string title = Console.ReadLine();
 
             Console.Write("Le livre est-il emprunté ? (oui/non) : ");
             bool isBorrowed = Console.ReadLine()?.Trim().ToLower() == "oui";
+            Console.Write("Rentrez l'id de l'auteur ");
+            string input = Console.ReadLine();
+            int.TryParse(input, out idAuthor);
+            Console.Write("Rentrez l'id de la catégorie ");
+            input = Console.ReadLine();
+            int.TryParse(input, out idShelf);
 
-            Console.Write("Entrez l'ID du rayon : ");
-            int shelfId = int.Parse(Console.ReadLine() ?? "0");
 
-            Console.Write("Entrez le nom de l'auteur : ");
-            string authorName = Console.ReadLine();
-
-            Console.Write("Entrez le prénom de l'auteur : ");
-            string authorFirstName = Console.ReadLine();
-
-            // Construire les modèles pour le livre et l'auteur
-            var book = new
-            {
-                Title = title,
-                IsBorrowed = isBorrowed,
-                ShelfModelId = shelfId
-            };
-
-            var author = new
-            {
-                Name = authorName,
-                FirstName = authorFirstName
-            };
-
-            try
-            {
-                using var client = new HttpClient();
-                client.BaseAddress = new Uri("http://localhost:5253/api/");
-
-                var payload = new
-                {
-                    Book = book,
-                    Author = author
-                };
-
-                // Envoyer la requête POST
-                var response = await client.PostAsJsonAsync("book/add", payload);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    Console.WriteLine("Le livre avec son auteur a été ajouté avec succès.");
-                }
-                else
-                {
-                    Console.WriteLine($"Erreur lors de l'ajout : {response.StatusCode} - {response.ReasonPhrase}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Exception lors de l'ajout : {ex.Message}");
-            }
-
-            Console.WriteLine("Appuyez sur une touche pour continuer...");
-            Console.ReadKey();
+            var book = new BookModel() { Title = title, IsBorrowed = isBorrowed, AuthorModelId= idAuthor, ShelfModelId= idShelf };
+            book = repository.Create(book).Result;
+            if (book == null)
+                Console.WriteLine("Raté");
+            else
+                Console.WriteLine($"Livre Crée: {book.Title} {book.IsBorrowed}");
         }
-
-
     }
 }

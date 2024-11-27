@@ -38,8 +38,8 @@ namespace BiblioFind.Data.Repositories
         public async Task<IEnumerable<BookModel>> GetBorrowedBooks()
         {
             return await context.Books
-                .Include(b => b.Member)  // Inclure les informations sur le membre emprunteur
-                .Where(b => b.IsBorrowed == true)  // Filtrer les livres empruntés
+                .AsNoTracking()
+                .Where(b => b.IsBorrowed == true)  // Filtrer les livres par rayon
                 .ToListAsync();
         }
 
@@ -131,6 +131,13 @@ namespace BiblioFind.Data.Repositories
             context.Entry(entity).CurrentValues.SetValues(model);
             await context.SaveChangesAsync();
             return entity;
+        }
+
+        public async Task<BookModel?> Create(BookModel model)
+        {
+            context.Set<BookModel>().Add(model); //Rend le repository generique
+            await context.SaveChangesAsync(); //Execute la requete du ADD
+            return model;
         }
     }
 }

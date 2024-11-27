@@ -21,87 +21,50 @@ namespace BiblioFind.Data.Repositories
         // Lister les livres par auteur
         public async Task<IEnumerable<BookModel>> GetBooksByAuthor(string authorName)
         {
-            return await context.Books
-                .Where(b => b.Author.Name.ToLower().Contains(authorName.ToLower()) ||
-                            b.Author.FirstName.ToLower().Contains(authorName.ToLower()))
-                .ToListAsync();
+            throw new NotImplementedException();
+            //return await context.Books
+            //    .Where(b => b.Author.Name.ToLower().Contains(authorName.ToLower()) ||
+            //                b.Author.FirstName.ToLower().Contains(authorName.ToLower()))
+            //    .ToListAsync();
         }
 
         // Lister les livres par rayon
         public async Task<IEnumerable<BookModel>> GetShelf(int shelfId)
         {
-            return await context.Books
-                .AsNoTracking()
-                .Where(b => b.ShelfModelId == shelfId)
-                .ToListAsync();
+            throw new NotImplementedException();
+            //return await context.Books
+            //    .AsNoTracking()
+            //    .Where(b => b.ShelfModelId == shelfId)
+            //    .ToListAsync();
         }
 
         // Lister les livres empruntés
         public async Task<IEnumerable<BookModel>> GetBorrowedBooks()
         {
-            return await context.Books
-                .Where(b => b.IsBorrowed)
-                .Include(b => b.Member)
-                .ToListAsync();
+            throw new NotImplementedException();
+            //return await context.Books
+            //    .Where(b => b.IsBorrowed)
+            //    .Include(b => b.Member)
+            //    .ToListAsync();
         }
 
         
 
         public async Task<IEnumerable<BookModel>> SearchBooksByTitleAsync(string title)
         {
-            return await context.Books
-                .Where(b => b.Title.ToLower().Contains(title.ToLower()))
-                .ToListAsync();
+            throw new NotImplementedException();
+            //return await context.Books
+            //    .Where(b => b.Title.ToLower().Contains(title.ToLower()))
+            //    .ToListAsync();
         }
-        public async Task<bool> AddBookWithAuthorAsync(BookModel book, AuthorModel author)
+
+        public async Task<BookModel?> Create(BookModel model)
         {
-            if (book == null || author == null)
-            {
-                return false; // Validation des paramètres
-            }
-
-            // Construire l'objet de la requête avec les propriétés spécifiques de BookModel
-            var requestPayload = new
-            {
-                Title = book.Title,
-                IsBorrowed = book.IsBorrowed,
-                AuthorModelId = book.AuthorModelId,
-                Author = new
-                {
-                    author.Name,
-                    author.FirstName
-                },
-                ShelfModelId = book.ShelfModelId,
-                MemberModelId = book.MemberModelId // Nullable, donc peut être null
-            };
-
-            try
-            {
-                using var httpClient = new HttpClient
-                {
-                    BaseAddress = new Uri("http://localhost:5253/api/")
-                };
-
-                // Envoyer la requête POST
-                var response = await httpClient.PostAsJsonAsync("book/add", requestPayload);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    return true; // Succès
-                }
-
-                // Logique en cas d'échec
-                Console.WriteLine($"Erreur lors de l'ajout : {response.StatusCode} - {response.ReasonPhrase}");
-                return false;
-            }
-            catch (Exception ex)
-            {
-                // Gérer les erreurs de communication
-                Console.WriteLine($"Exception lors de l'ajout : {ex.Message}");
-                return false;
-            }
+            var response = await client.PostAsJsonAsync($"{url}/book", model);
+            if (response.IsSuccessStatusCode)
+                return await response.Content.ReadFromJsonAsync<BookModel?>();
+            return null;
         }
-
 
 
         public async Task<BookModel> Update(int bookId, BookModel model)
