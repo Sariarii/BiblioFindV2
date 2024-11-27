@@ -20,7 +20,6 @@ namespace BiblioFind.Data.Repositories
         {
             return await context.Books
                 .AsNoTracking()
-                .Include(b => b.Author)
                 .Where(b => b.Author.Name.ToLower().Contains(authorName.ToLower()) ||
                             b.Author.FirstName.ToLower().Contains(authorName.ToLower()))
                 .ToListAsync();
@@ -31,7 +30,6 @@ namespace BiblioFind.Data.Repositories
         {
             return await context.Books
                 .AsNoTracking()
-                .Include(b => b.Shelf)  // Inclure le modèle Shelf
                 .Where(b => b.ShelfModelId == shelfId)  // Filtrer les livres par rayon
                 .ToListAsync();
         }
@@ -106,6 +104,15 @@ namespace BiblioFind.Data.Repositories
                 .Where(b => EF.Functions.Like(b.Title.ToLower(), $"%{title.ToLower()}%"))
                 .ToListAsync();
         }
+        public async Task<IEnumerable<BookModel>> Get()
+        {
+            return await context.Books.ToListAsync();
+        }
+        public async Task<BookModel?> SearchBooksById(int id)
+        {
+            return await context.Books.FirstOrDefaultAsync(b => b.Id == id);
+        }
+
 
         public async Task<bool> AddBookWithAuthorAsync(BookModel book, AuthorModel author)
         {
@@ -139,5 +146,14 @@ namespace BiblioFind.Data.Repositories
             return true;
         }
 
+        public async Task<BookModel> AssignShelfToBookAsync(int bookId, BookModel model)
+        {
+            var entity = await context.Set<BookModel>().FirstOrDefaultAsync(x => x.Id == bookId);
+            if (entity == null)
+                return null;
+            context.Entry(entity).CurrentValues.SetValues(model);
+            await context.SaveChangesAsync();
+            return entity;
+        }
     }
 }

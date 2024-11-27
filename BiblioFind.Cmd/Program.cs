@@ -2,6 +2,7 @@
 using System;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace BiblioFind.Cmd
@@ -10,6 +11,7 @@ namespace BiblioFind.Cmd
     {
         static async Task Main(string[] args)
         {
+            IBookRepository repository = new ApiBookRepository("http://localhost:5253/api");
             while (true)
             {
                 Console.Clear();
@@ -46,7 +48,8 @@ namespace BiblioFind.Cmd
                         await ReturnBook();
                         break;
                     case "6":
-                        await AssignShelfToBook();
+                        await Get(repository);
+                        await AssignShelfToBook(repository);
                         break;
                     case "7":
                         await SearchBookByTitle();
@@ -89,7 +92,7 @@ namespace BiblioFind.Cmd
             string authorName = Console.ReadLine();
 
             using var client = new HttpClient();
-            var response = await client.GetAsync($"http://localhost:5253/api/book/author/{authorName}");
+            var response = await client.GetAsync($"http://localhost:5253/api/book/author?authorName={authorName}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -110,7 +113,7 @@ namespace BiblioFind.Cmd
             int shelfId = int.Parse(Console.ReadLine() ?? "0");
 
             using var client = new HttpClient();
-            var response = await client.GetAsync($"http://localhost:5253/api/book/shelf/{shelfId}");
+            var response = await client.GetAsync($"http://localhost:5253/api/book/shelf?shelfId={shelfId}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -167,26 +170,53 @@ namespace BiblioFind.Cmd
             Console.ReadKey();
         }
 
-        private static async Task AssignShelfToBook()
+        private static async Task Get(IBookRepository repository)
         {
-            Console.Write("Entrez l'ID du livre : ");
-            int bookId = int.Parse(Console.ReadLine() ?? "0");
-            Console.Write("Entrez l'ID du rayon : ");
-            int shelfId = int.Parse(Console.ReadLine() ?? "0");
-
-            using var client = new HttpClient();
-            var response = await client.PostAsync($"http://localhost:5253/api/book/assignshelf/{bookId}/{shelfId}", null);
-
-            if (response.IsSuccessStatusCode)
+            var models = repository.Get().Result;
+            if (models == null)
             {
-                Console.WriteLine("Le rayon a été assigné au livre avec succès.");
+                Console.WriteLine("Error API");
+                return;
+            }
+            StringBuilder message = new StringBuilder();
+            foreach (var item in models)
+            {
+                message.Append($"{item.Id} {item.Title} {item.Author}\n");
+            }
+            Console.WriteLine(message.ToString());
+
+        }
+
+        private static async Task AssignShelfToBook(IBookRepository repository)
+        {
+
+            Console.WriteLine("Donnez le numero du livre que vous voulez assigner a une étagère");
+            int id;
+            string input = Console.ReadLine();
+            int.TryParse(input, out id);
+            var result = repository.SearchBooksById(id).Result;
+            Console.WriteLine($"Est ce bien ce livre ? : {result.Title} (Oui/Non)");
+            string Response = Console.ReadLine();
+            if (Response == "Oui")
+            {
+                Console.WriteLine("Chosissez l'Id de la catégorie");
+                int idShelf;
+                input = Console.ReadLine();
+                int.TryParse(input, out idShelf);
+                result.ShelfModelId = idShelf;
+                Console.WriteLine($"{result.ShelfModelId}");
+                result = repository.AssignShelfToBookAsync(id, result).Result;
+            }
+            else if (Response == "Non")
+            {
+
+                return;
             }
             else
             {
-                Console.WriteLine("Erreur lors de l'assignation du rayon.");
+                Console.WriteLine("Reponse non valide");
+                return;
             }
-
-            Console.ReadKey();
         }
 
         private static async Task SearchBookByTitle()

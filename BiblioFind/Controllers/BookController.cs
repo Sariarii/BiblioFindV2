@@ -18,51 +18,55 @@ namespace BiblioFind.Controllers
         }
 
         // Endpoint : Lister les livres par auteur
-        [HttpGet("author/{authorName}")]
-        public async Task<IActionResult> GetBooksByAuthor(string authorName)
+        [HttpGet("author")]
+        public async Task<IEnumerable<BookModel>> GetBooksByAuthor([FromQuery] string authorName)
         {
-            try
-            {
-                var books = await _bookRepository.GetBooksByAuthor(authorName);
-                if (books == null || !books.Any())
-                {
-                    return NotFound(new { message = "Aucun livre trouvé pour cet auteur." });
-                }
-                return Ok(books);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Erreur interne du serveur.", details = ex.Message });
-            }
+            var booksByAuthor = await _bookRepository.GetBooksByAuthor(authorName);
+            return booksByAuthor;
+            //try
+            //{
+            //    var books = await _bookRepository.GetBooksByAuthor(authorName);
+            //    if (books == null || !books.Any())
+            //    {
+            //        return NotFound(new { message = "Aucun livre trouvé pour cet auteur." });
+            //    }
+            //    return Ok(books);
+            //}
+            //catch (Exception ex)
+            //{
+            //    return StatusCode(500, new { message = "Erreur interne du serveur.", details = ex.Message });
+            //}
         }
 
         // Endpoint : Lister les livres par rayon
-        [HttpGet("shelf/{shelfId}")]
-        public async Task<IActionResult> GetBooksByShelf(int shelfId)
+        [HttpGet("shelf")]
+        public async Task<IEnumerable<BookModel>> GetBooksByShelf([FromQuery] int shelfId)
         {
-            try
-            {
-                // Vérification si l'ID du rayon est valide
-                if (shelfId <= 0)
-                {
-                    return BadRequest(new { message = "ID de rayon invalide." });
-                }
+            var booksByShelf = await _bookRepository.GetShelf(shelfId);
+            return booksByShelf;
+            //try
+            //{
+            //    // Vérification si l'ID du rayon est valide
+            //    if (shelfId <= 0)
+            //    {
+            //        return BadRequest(new { message = "ID de rayon invalide." });
+            //    }
 
-                // Appel au repository pour récupérer les livres par rayon
-                var books = await _bookRepository.GetShelf(shelfId);
+            //    // Appel au repository pour récupérer les livres par rayon
+            //    var books = await _bookRepository.GetShelf(shelfId);
 
-                if (books == null || !books.Any())
-                {
-                    return NotFound(new { message = "Aucun livre trouvé pour ce rayon." });
-                }
+            //    if (books == null || !books.Any())
+            //    {
+            //        return NotFound(new { message = "Aucun livre trouvé pour ce rayon." });
+            //    }
 
-                return Ok(books);
-            }
-            catch (Exception ex)
-            {
-                // En cas d'erreur serveur, on renvoie un message d'erreur
-                return StatusCode(500, new { message = "Erreur interne du serveur.", details = ex.Message });
-            }
+            //    return Ok(books);
+            //}
+            //catch (Exception ex)
+            //{
+            //    // En cas d'erreur serveur, on renvoie un message d'erreur
+            //    return StatusCode(500, new { message = "Erreur interne du serveur.", details = ex.Message });
+            //}
         }
 
 
@@ -125,35 +129,58 @@ namespace BiblioFind.Controllers
 
         // BookController.cs
 
-        [HttpPut("assignshelf/{bookId}")]
-        public async Task<IActionResult> AssignShelfToBook(int bookId, [FromBody] int shelfId)
+        [HttpGet]
+        public async Task<IEnumerable<BookModel>> Get()
         {
-            try
-            {
-                // Vérifier que l'ID du rayon est valide
-                if (shelfId <= 0)
-                {
-                    return BadRequest(new { message = "ID du rayon invalide." });
-                }
-
-                // Appeler la méthode dans le repository pour assigner le rayon au livre
-                var result = await _bookRepository.AssignShelfToBookAsync(bookId, shelfId);
-
-                // Si l'opération a échoué (livre ou rayon introuvable), renvoyer un message d'erreur
-                if (!result)
-                {
-                    return NotFound(new { message = "Livre ou rayon non trouvé." });
-                }
-
-                // Sinon, renvoyer une réponse positive
-                return Ok(new { message = "Rayon assigné au livre avec succès." });
-            }
-            catch (Exception ex)
-            {
-                // Si une exception se produit, renvoyer un message d'erreur
-                return StatusCode(500, new { message = "Erreur interne du serveur.", details = ex.Message });
-            }
+            return await _bookRepository.Get();
         }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<BookModel>> SearchBooksById(int id)
+        {
+            var model = await _bookRepository.SearchBooksById(id);
+            if (model == null)
+                return NotFound();
+            return model;
+        }
+
+        [HttpPut("{bookId}")]
+        public async Task<ActionResult<BookModel>> AssignShelfToBookAsync(int bookId, BookModel model)
+        {
+            var person = await _bookRepository.AssignShelfToBookAsync(bookId, model);
+            if (person == null)
+                return NotFound();
+            return model;
+        }
+
+        //public async Task<IActionResult> AssignShelfToBook(int bookId, [FromBody] int shelfId)
+        //{
+        //    try
+        //    {
+        //        // Vérifier que l'ID du rayon est valide
+        //        if (shelfId <= 0)
+        //        {
+        //            return BadRequest(new { message = "ID du rayon invalide." });
+        //        }
+
+        //        // Appeler la méthode dans le repository pour assigner le rayon au livre
+        //        var result = await _bookRepository.AssignShelfToBookAsync(bookId, shelfId);
+
+        //        // Si l'opération a échoué (livre ou rayon introuvable), renvoyer un message d'erreur
+        //        if (!result)
+        //        {
+        //            return NotFound(new { message = "Livre ou rayon non trouvé." });
+        //        }
+
+        //        // Sinon, renvoyer une réponse positive
+        //        return Ok(new { message = "Rayon assigné au livre avec succès." });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // Si une exception se produit, renvoyer un message d'erreur
+        //        return StatusCode(500, new { message = "Erreur interne du serveur.", details = ex.Message });
+        //    }
+        //}
         [HttpGet("search/{title}")]
         public async Task<IActionResult> SearchBooksByTitle(string title)
         {

@@ -14,8 +14,10 @@ namespace BiblioFind.Data.Repositories
         Task<IEnumerable<BookModel>> GetBorrowedBooks();
         Task<bool> BorrowBook(int bookId, int memberId);
         Task<bool> ReturnBook(int bookId);
-        Task<bool> AssignShelfToBookAsync(int bookId, int shelfId);
+        Task<BookModel> AssignShelfToBookAsync(int bookId, BookModel model);
         Task<IEnumerable<BookModel>> SearchBooksByTitleAsync(string title);
+        Task<IEnumerable<BookModel>> Get();
+        Task<BookModel> SearchBooksById(int id);
 
         Task<bool> AddBookWithAuthorAsync(BookModel book, AuthorModel author);
     }

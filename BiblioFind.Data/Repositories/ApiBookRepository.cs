@@ -10,17 +10,21 @@ namespace BiblioFind.Data.Repositories
     public class ApiBookRepository : IBookRepository
     {
         private readonly DataContext context;
-
-        public ApiBookRepository(DataContext context)
+        private readonly string url;
+        private readonly HttpClient client;
+        public ApiBookRepository(string url)
         {
-            this.context = context;
+            this.url = url;
+            client = new HttpClient();
+            client.BaseAddress = new Uri(url);
         }
 
         // Lister les livres par auteur
         public async Task<IEnumerable<BookModel>> GetBooksByAuthor(string authorName)
         {
             return await context.Books
-                .Where(b => b.Author.Name.Contains(authorName) || b.Author.FirstName.Contains(authorName))
+                .Where(b => b.Author.Name.ToLower().Contains(authorName.ToLower()) ||
+                            b.Author.FirstName.ToLower().Contains(authorName.ToLower()))
                 .ToListAsync();
         }
 
@@ -28,6 +32,7 @@ namespace BiblioFind.Data.Repositories
         public async Task<IEnumerable<BookModel>> GetShelf(int shelfId)
         {
             return await context.Books
+                .AsNoTracking()
                 .Where(b => b.ShelfModelId == shelfId)
                 .ToListAsync();
         }
@@ -73,29 +78,6 @@ namespace BiblioFind.Data.Repositories
             return true;
         }
 
-        public async Task<bool> AssignShelfToBookAsync(int bookId, int shelfId)
-        {
-            // Trouver le livre par son ID
-            var book = await context.Books.FindAsync(bookId);
-            if (book == null)
-            {
-                return false;  // Le livre n'existe pas
-            }
-
-            // Trouver le rayon par son ID
-            var shelf = await context.Shelves.FindAsync(shelfId);
-            if (shelf == null)
-            {
-                return false;  // Le rayon n'existe pas
-            }
-
-            // Assigner le rayon au livre
-            book.ShelfModelId = shelfId;
-
-            // Sauvegarder les changements dans la base de données
-            await context.SaveChangesAsync();
-            return true;  // Retourner true si l'assignation a réussi
-        }
         public async Task<IEnumerable<BookModel>> SearchBooksByTitleAsync(string title)
         {
             return await context.Books
@@ -151,5 +133,35 @@ namespace BiblioFind.Data.Repositories
             }
         }
 
+
+
+        public async Task<BookModel> AssignShelfToBookAsync(int bookId, BookModel model)
+        {
+            var response = await client.PutAsJsonAsync($"{url}/book/{bookId}", model);
+            if (response.IsSuccessStatusCode)
+                return await response.Content.ReadFromJsonAsync<BookModel?>();
+            return null;
+        }
+
+        public async Task<IEnumerable<BookModel>> Get()
+        {
+            var response = await client.GetAsync($"{url}/book");
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<IEnumerable<BookModel>>();
+
+            }
+            return null;
+        }
+
+        public async Task<BookModel> SearchBooksById(int id)
+        {
+            var response = await client.GetAsync($"{url}/book/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<BookModel>();
+            }
+            return null;
+        }
     }
 }
